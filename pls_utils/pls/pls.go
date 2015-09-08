@@ -3,6 +3,7 @@ package pls
 import (
 	"bytes"
 	"fmt"
+	//"io"
 	"regexp"
 	"strconv"
 	"strings"
@@ -65,7 +66,7 @@ func Parse(contents string) (pl Playlist, err error) {
 	return pl, nil
 }
 
-func (pl *Playlist) ToPls() string {
+func (pl *Playlist) Marshal() (v []byte, err error) {
 	var buff bytes.Buffer
 
 	buff.WriteString("[playlist]\n")
@@ -78,7 +79,7 @@ func (pl *Playlist) ToPls() string {
 	}
 	buff.WriteString("Version=2\n")
 
-	return buff.String()
+	return buff.Bytes(), err
 }
 
 func (pl *Playlist) AddEntry(entries ...PlaylistEntry) (int, error) {
@@ -94,3 +95,8 @@ func (pl *Playlist) Merge(playlists ...Playlist) (Playlist, error) {
 	}
 	return newPl, nil
 }
+
+//func (pl *Playlist) Read(p []byte) (n int, err error) {
+//	p = append(p, "[playlist]\n"...)
+//	return len(p), nil
+//}

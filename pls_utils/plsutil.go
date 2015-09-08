@@ -11,7 +11,6 @@ func main() {
 	var playlists []pls.Playlist
 
 	argsLen := len(os.Args)
-	//fmt.Printf("args: %d\n", argsLen)
 
 	//FIXME check arg1 for input, arg2 for output
 	if argsLen < 2 {
@@ -22,7 +21,7 @@ func main() {
 	//outFile := os.Args[argsLen-1]
 
 	for _, inputFile := range inputs {
-		//TODO make it work with bufio ?
+		//TODO make it work with io.Reader
 		contents, err := loadPls(inputFile)
 		if err != nil {
 			log.Printf("WARNING\t %s", err)
@@ -44,7 +43,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Print(newPls.ToPls())
+
+	plsContent, err := newPls.Marshal()
+	fmt.Print(string(plsContent))
 }
 
 //TODO add option to download from URL
@@ -59,7 +60,6 @@ func loadPls(inputPls string) (_ string, _ error) {
 func readLocalFile(inputFile string) (fileContents string, err error) {
 	f, err := os.Open(inputFile)
 	if err != nil {
-		//log.Printf("missing input file: %v \n", inputFile)
 		return "", fmt.Errorf("skipping missing file %s ", inputFile)
 	} else {
 		defer f.Close()
@@ -70,3 +70,13 @@ func readLocalFile(inputFile string) (fileContents string, err error) {
 	}
 	return
 }
+
+//func writeToFile(fileName string) {
+//	file, err := os.Create(fileName)
+//	defer func() {
+//		if err := file.Close(); err != nil {
+//			panic(err)
+//		}
+//	}()
+//
+//}
