@@ -11,7 +11,6 @@ import (
 
 type Playlist struct {
 	Entries []PlaylistEntry
-	Version string
 }
 
 type PlaylistEntry struct {
@@ -27,7 +26,7 @@ func (plEntry PlaylistEntry) String() string {
 	return fmt.Sprintf("Title: %s\nFile: %s \n", plEntry.Title, plEntry.File)
 }
 
-func (plEntry *PlaylistEntry) Empty() bool {
+func (plEntry *PlaylistEntry) isEmpty() bool {
 	if plEntry.Title == "" && plEntry.File == "" {
 		return true
 	}
@@ -58,7 +57,7 @@ func Parse(contents string) (pl Playlist, err error) {
 	}
 
 	for i := 0; i < len(_entries); i++ {
-		if entry := _entries[i]; !entry.Empty() {
+		if entry := _entries[i]; !entry.isEmpty() {
 			pl.Entries = append(pl.Entries, entry)
 		}
 	}
