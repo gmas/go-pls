@@ -79,8 +79,37 @@ Length3=-1
 	}
 }
 
-func TestParseVersion(t *testing.T) {}
-
 func TestMarshal(t *testing.T) {
+	plst := &pls.Playlist{
+		Entries: []pls.PlaylistEntry{
+			{`http://localhost:8081`, `test1`},
+			{`http://localhost:8082`, `test2`},
+			{`http://localhost:8083`, `test3`},
+		}}
 
+	expected := `[playlist]
+numberofentries=3
+File1=http://localhost:8081
+Title1=test1
+Length1=-1
+File2=http://localhost:8082
+Title2=test2
+Length2=-1
+File3=http://localhost:8083
+Title3=test3
+Length3=-1
+Version=2
+`
+	marshaled, err := plst.Marshal()
+	t.Logf("Expected\n%s\nActual\n%s", expected, string(marshaled))
+
+	if err != nil {
+		t.Error("Failed to marshal Playlist")
+	}
+	if string(marshaled) != expected {
+		t.Error("Failed to marshal Playlist")
+	}
+}
+
+func TestParseOutOfOrder(t *testing.T) {
 }
