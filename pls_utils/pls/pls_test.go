@@ -20,18 +20,20 @@ func TestAddEntry(t *testing.T) {
 }
 
 func TestMerge(t *testing.T) {
-	entriesPlst1 := []pls.PlaylistEntry{
-		{`http://localhost:8081`, `test1`},
-		{`http://localhost:8082`, `test2`},
-		{`http://localhost:8083`, `test3`},
-	}
-	entriesPlst2 := []pls.PlaylistEntry{
-		{`http://localhost:8084`, `test4`},
-	}
-	plst1 := &pls.Playlist{Entries: entriesPlst1}
-	plst2 := &pls.Playlist{Entries: entriesPlst2}
+	plst1 := &pls.Playlist{
+		Entries: []pls.PlaylistEntry{
+			{`http://localhost:8081`, `test1`},
+			{`http://localhost:8082`, `test2`},
+			{`http://localhost:8083`, `test3`},
+		}}
+	plst2 := &pls.Playlist{
+		Entries: []pls.PlaylistEntry{
+			{`http://localhost:8084`, `test4`},
+		}}
 
+	expectedEntries := append(plst1.Entries, plst2.Entries...)
 	mergedPlaylist, _ := plst1.Merge(*plst2)
+
 	t.Logf("Expected %d == %d + %d", mergedPlaylist.Length(),
 		plst1.Length(), plst2.Length())
 
@@ -39,9 +41,8 @@ func TestMerge(t *testing.T) {
 		t.Error("Merged playlist length != sum of merged playlists")
 	}
 
-	mergedEntries := append(entriesPlst1, entriesPlst2...)
-	t.Logf("Expected %s \n==\n %s", mergedEntries, mergedPlaylist.Entries)
-	if !reflect.DeepEqual(mergedEntries, mergedPlaylist.Entries) {
+	t.Logf("Expected %s \n==\n %s", expectedEntries, mergedPlaylist.Entries)
+	if !reflect.DeepEqual(expectedEntries, mergedPlaylist.Entries) {
 		t.Error("Merged playlist length != sum of merged playlists")
 	}
 }
@@ -81,4 +82,5 @@ Length3=-1
 func TestParseVersion(t *testing.T) {}
 
 func TestMarshal(t *testing.T) {
+
 }
