@@ -79,6 +79,38 @@ Length3=-1
 	}
 }
 
+func TestParseOutOfOrder(t *testing.T) {
+	playlistContent := `
+[playlist]
+numberofentries=3
+File3=http://dcstream1.somafm.com:8384
+Title1=SomaFM: Beat Blender (#1 128k mp3): A late night blend of deep-house and downtempo chill.
+Length1=-1
+Title2=SomaFM: Beat Blender (#2 128k mp3): A late night blend of deep-house and downtempo chill.
+Length2=-1
+File1=http://xstream1.somafm.com:8388
+Title3=SomaFM: Beat Blender (#3 128k mp3): A late night blend of deep-house and downtempo chill.
+Length3=-1
+File2=http://xstream1.somafm.com:8384
+`
+	parsedPlaylist, err := pls.Parse(playlistContent)
+	if err != nil {
+		t.Error("Coould not parse playlist")
+	}
+
+	expectedEntries := []pls.PlaylistEntry{
+		{File: `http://xstream1.somafm.com:8388`,
+			Title: `SomaFM: Beat Blender (#1 128k mp3): A late night blend of deep-house and downtempo chill.`},
+		{File: `http://xstream1.somafm.com:8384`,
+			Title: `SomaFM: Beat Blender (#2 128k mp3): A late night blend of deep-house and downtempo chill.`},
+		{File: `http://dcstream1.somafm.com:8384`,
+			Title: `SomaFM: Beat Blender (#3 128k mp3): A late night blend of deep-house and downtempo chill.`},
+	}
+	if !reflect.DeepEqual(expectedEntries, parsedPlaylist.Entries) {
+		t.Error("Failed to parse out of order playlist entries")
+	}
+}
+
 func TestMarshal(t *testing.T) {
 	plst := &pls.Playlist{
 		Entries: []pls.PlaylistEntry{
@@ -109,7 +141,4 @@ Version=2
 	if string(marshaled) != expected {
 		t.Error("Failed to marshal Playlist")
 	}
-}
-
-func TestParseOutOfOrder(t *testing.T) {
 }
