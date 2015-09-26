@@ -1,8 +1,8 @@
 package main
 
 import (
-	"./pls"
 	"fmt"
+	"github.com/gmas/go-pls"
 	"log"
 	"os"
 )
