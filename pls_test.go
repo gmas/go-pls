@@ -133,13 +133,17 @@ Title3=test3
 Length3=-1
 Version=2
 `
-	marshaled, err := plst.Marshal()
-	t.Logf("Expected\n%s\nActual\n%s", expected, string(marshaled))
+	marshalledReader, err := plst.Marshal()
+	marshalledBuff := (bytes.Buffer{})
+	marshalledBuff.ReadFrom(marshalledReader)
+	marshalled := marshalledBuff.String()
+
+	t.Logf("Expected\n%s\nActual\n%s", expected, marshalled)
 
 	if err != nil {
 		t.Error("Failed to marshal Playlist")
 	}
-	if string(marshaled) != expected {
+	if string(marshalled) != expected {
 		t.Error("Failed to marshal Playlist")
 	}
 }

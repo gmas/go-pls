@@ -68,20 +68,20 @@ func Parse(contents io.Reader) (pl Playlist, err error) {
 	return pl, nil
 }
 
-func (pl *Playlist) Marshal() (v []byte, err error) {
+func (pl *Playlist) Marshal() (v io.Reader, err error) {
 	var buff bytes.Buffer
 
 	buff.WriteString("[playlist]\n")
 	buff.WriteString(fmt.Sprintf("numberofentries=%d\n", len(pl.Entries)))
 	for i, _ := range pl.Entries {
 		idx := i + 1
-		buff.WriteString(fmt.Sprintf(fmt.Sprintf("File%d=%s\n", idx, pl.Entries[i].File)))
-		buff.WriteString(fmt.Sprintf(fmt.Sprintf("Title%d=%s\n", idx, pl.Entries[i].Title)))
-		buff.WriteString(fmt.Sprintf(fmt.Sprintf("Length%d=-1\n", idx)))
+		buff.WriteString(fmt.Sprintf("File%d=%s\n", idx, pl.Entries[i].File))
+		buff.WriteString(fmt.Sprintf("Title%d=%s\n", idx, pl.Entries[i].Title))
+		buff.WriteString(fmt.Sprintf("Length%d=-1\n", idx))
 	}
 	buff.WriteString("Version=2\n")
 
-	return buff.Bytes(), err
+	return bytes.NewReader(buff.Bytes()), err
 }
 
 func (pl *Playlist) AddEntry(entries ...PlaylistEntry) (int, error) {
