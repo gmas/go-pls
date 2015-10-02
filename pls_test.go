@@ -2,6 +2,7 @@ package pls
 
 import (
 	"./"
+	"bytes"
 	_ "fmt"
 	"reflect"
 	"testing"
@@ -61,7 +62,7 @@ File3=http://dcstream1.somafm.com:8384
 Title3=SomaFM: Beat Blender (#3 128k mp3): A late night blend of deep-house and downtempo chill.
 Length3=-1
 `
-	parsedPlaylist, err := pls.Parse(playlistContent)
+	parsedPlaylist, err := pls.Parse(bytes.NewBufferString(playlistContent))
 	if err != nil {
 		t.Error("Coould not parse playlist")
 	}
@@ -93,7 +94,7 @@ Title3=SomaFM: Beat Blender (#3 128k mp3): A late night blend of deep-house and 
 Length3=-1
 File2=http://xstream1.somafm.com:8384
 `
-	parsedPlaylist, err := pls.Parse(playlistContent)
+	parsedPlaylist, err := pls.Parse(bytes.NewBufferString(playlistContent))
 	if err != nil {
 		t.Error("Coould not parse playlist")
 	}
@@ -132,13 +133,17 @@ Title3=test3
 Length3=-1
 Version=2
 `
-	marshaled, err := plst.Marshal()
-	t.Logf("Expected\n%s\nActual\n%s", expected, string(marshaled))
+	marshalledReader, err := plst.Marshal()
+	marshalledBuff := (bytes.Buffer{})
+	marshalledBuff.ReadFrom(marshalledReader)
+	marshalled := marshalledBuff.String()
+
+	t.Logf("Expected\n%s\nActual\n%s", expected, marshalled)
 
 	if err != nil {
 		t.Error("Failed to marshal Playlist")
 	}
-	if string(marshaled) != expected {
+	if string(marshalled) != expected {
 		t.Error("Failed to marshal Playlist")
 	}
 }

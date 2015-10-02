@@ -1,9 +1,10 @@
 package pls
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
-	//"io"
+	"io"
 	"regexp"
 	"strconv"
 	"strings"
@@ -33,13 +34,15 @@ func (plEntry *PlaylistEntry) isEmpty() bool {
 	return false
 }
 
-func Parse(contents string) (pl Playlist, err error) {
+func Parse(contents io.Reader) (pl Playlist, err error) {
 	//FIXME entries needs to grow itself
 	// use a Set so we get no dupes ?
 	_entries := make([]PlaylistEntry, 1024)
 
 	fileRegexp := regexp.MustCompile(`File(\d+)=`)
-	for _, line := range strings.Split(contents, "\n") {
+	contentScanner := bufio.NewScanner(contents)
+	for contentScanner.Scan() {
+		line := contentScanner.Text() //to get the line string}
 		fileMatches := fileRegexp.FindStringSubmatch(line)
 		if len(fileMatches) > 0 {
 			fileId, _ := strconv.ParseInt(fileMatches[1], 10, 64)
@@ -65,20 +68,20 @@ func Parse(contents string) (pl Playlist, err error) {
 	return pl, nil
 }
 
-func (pl *Playlist) Marshal() (v []byte, err error) {
+func (pl *Playlist) Marshal() (v io.Reader, err error) {
 	var buff bytes.Buffer
 
 	buff.WriteString("[playlist]\n")
 	buff.WriteString(fmt.Sprintf("numberofentries=%d\n", len(pl.Entries)))
 	for i, _ := range pl.Entries {
 		idx := i + 1
-		buff.WriteString(fmt.Sprintf(fmt.Sprintf("File%d=%s\n", idx, pl.Entries[i].File)))
-		buff.WriteString(fmt.Sprintf(fmt.Sprintf("Title%d=%s\n", idx, pl.Entries[i].Title)))
-		buff.WriteString(fmt.Sprintf(fmt.Sprintf("Length%d=-1\n", idx)))
+		buff.WriteString(fmt.Sprintf("File%d=%s\n", idx, pl.Entries[i].File))
+		buff.WriteString(fmt.Sprintf("Title%d=%s\n", idx, pl.Entries[i].Title))
+		buff.WriteString(fmt.Sprintf("Length%d=-1\n", idx))
 	}
 	buff.WriteString("Version=2\n")
 
-	return buff.Bytes(), err
+	return bytes.NewReader(buff.Bytes()), err
 }
 
 func (pl *Playlist) AddEntry(entries ...PlaylistEntry) (int, error) {
