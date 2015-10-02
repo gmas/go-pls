@@ -1,9 +1,10 @@
 package pls
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
-	//"io"
+	"io"
 	"regexp"
 	"strconv"
 	"strings"
@@ -33,13 +34,15 @@ func (plEntry *PlaylistEntry) isEmpty() bool {
 	return false
 }
 
-func Parse(contents string) (pl Playlist, err error) {
+func Parse(contents io.Reader) (pl Playlist, err error) {
 	//FIXME entries needs to grow itself
 	// use a Set so we get no dupes ?
 	_entries := make([]PlaylistEntry, 1024)
 
 	fileRegexp := regexp.MustCompile(`File(\d+)=`)
-	for _, line := range strings.Split(contents, "\n") {
+	contentScanner := bufio.NewScanner(contents)
+	for contentScanner.Scan() {
+		line := contentScanner.Text() //to get the line string}
 		fileMatches := fileRegexp.FindStringSubmatch(line)
 		if len(fileMatches) > 0 {
 			fileId, _ := strconv.ParseInt(fileMatches[1], 10, 64)
