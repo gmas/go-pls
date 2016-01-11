@@ -3,10 +3,11 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/gmas/go-pls"
 	"io"
 	"log"
 	"os"
+
+	"github.com/gmas/go-pls"
 )
 
 func main() {
