@@ -6,6 +6,9 @@ import (
 	"io"
 	"log"
 	"os"
+	"net/http"
+	"io/ioutil"
+	"regexp"
 
 	"github.com/gmas/go-pls"
 )
@@ -23,8 +26,17 @@ func main() {
 	//outFile := os.Args[argsLen-1]
 
 	for _, inputFile := range inputs {
+		var plsReader io.Reader
+		var err error
 
-		plsReader, err := openPls(inputFile)
+		httpRegexp := regexp.MustCompile(`^http(s*):\/\/`)
+		matches := httpRegexp.FindStringSubmatch(inputFile)
+		if len(matches) > 0 {
+			plsReader, err = downloadPls(inputFile)
+		} else {
+			plsReader, err = openPls(inputFile)
+		}
+
 		if err != nil {
 			log.Printf("WARNING\t %s", err)
 			continue
@@ -65,4 +77,17 @@ func openPls(inputPls string) (io.Reader, error) {
 	}
 
 	return reader, nil
+}
+
+func downloadPls(plsURL string) (io.Reader, error) {
+	response, err := http.Get(plsURL)
+
+	if err != nil {
+		return nil, fmt.Errorf("%s \n", err)
+	}
+
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	return bytes.NewReader(body), nil
 }
