@@ -9,15 +9,26 @@ import (
 	"net/http"
 	"io/ioutil"
 //	"regexp"
-	// "sync"
+	"sync"
 
 	"github.com/gmas/go-pls"
 )
 
-func loadAndPars(urls ...string) <- chan pls.Playlist {
-	out := make(chan pls.Playlist)
+func emit(urls ...string) <- chan string {
+	out := make(chan string)
 	go func() {
 		for _, n := range urls {
+			out <- n
+			}
+		close(out)
+	}()
+	return out
+}
+
+func loadAndParse(in <- chan string) <-chan pls.Playlist {
+	out := make(chan pls.Playlist)
+	go func() {
+		for n := range in {
 			plsReader, err := downloadPls(string(n))
 			if err != nil {
 				log.Printf("WARNING\t %s", err)
@@ -27,8 +38,34 @@ func loadAndPars(urls ...string) <- chan pls.Playlist {
 			out <- playlist
 		}
 		close(out)
-	}()
-	return out
+		}()
+		return out
+}
+
+func merge(cs ...<-chan pls.Playlist) <-chan pls.Playlist{
+    var wg sync.WaitGroup
+		out := make(chan pls.Playlist)
+
+    // Start an output goroutine for each input channel in cs.  output
+    // copies values from c to out until c is closed, then calls wg.Done.
+    output := func(c <-chan pls.Playlist) {
+        for n := range c {
+            out <- n
+        }
+        wg.Done()
+    }
+    wg.Add(len(cs))
+    for _, c := range cs {
+        go output(c)
+    }
+
+    // Start a goroutine to close out once all the output goroutines are
+    // done.  This must start after the wg.Add call.
+    go func() {
+        wg.Wait()
+        close(out)
+    }()
+    return out
 }
 
 func main() {
@@ -69,9 +106,18 @@ func main() {
 	// 	}
 	// }
 
-	for playlist := range loadAndPars(inputs...) {
+
+	urls := emit(inputs...)
+
+	c1 := loadAndParse(urls)
+	c2 := loadAndParse(urls)
+	c3 := loadAndParse(urls)
+	c4 := loadAndParse(urls)
+	
+	for playlist := range merge(c1,c2,c3,c4) {
 		playlists = append(playlists, playlist)
 	}
+
 	pl := pls.Playlist{}
 	pl, _ = pl.Merge(playlists...)
 
